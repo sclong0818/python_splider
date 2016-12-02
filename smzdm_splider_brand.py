@@ -109,7 +109,7 @@ class Brand_Spider:
                 dom_brands_li_page3 = soup3.select('ul[class*="brands"] > li')
                 dom_brands_li = dom_brands_li + dom_brands_li_page3
 
-            print("%s需要爬取%d页数,共计%d个品牌"%(cate_uri,splide_page,len(dom_brands_li)))
+            print(u"%s需要爬取%d页数,共计%d个品牌"%(cate_uri,splide_page,len(dom_brands_li)))
 
             j = 0
             for brand_li in dom_brands_li:
@@ -131,13 +131,17 @@ class Brand_Spider:
                 dom_brand_img = brand_li.find('img')
                 if dom_brand_img:
                     brand_image = dom_brand_img['src']
-                    # save image to local
-                    origin_image = brand_image.replace('_d200.jpg','')
-                    pos = origin_image.rfind('/')
-                    brand_pic_name = origin_image[pos+1:]
-                    sub_dir = str(brand['category']) +'/'
-                    self.file_tool.saveImg(self.imgSaveRoot,'brand/'+ sub_dir,brand_pic_name,brand_image)
-                    brand['pic_url']='/brand/'+ sub_dir + brand_pic_name
+                    _default_pos = brand_image.find('brand_default')
+                    if _default_pos > 1:
+                        brand['pic_url'] = '/brand/brand_default.jpg'
+                    else:
+                        # save image to local
+                        origin_image = brand_image.replace('_d200.jpg','')
+                        pos = origin_image.rfind('/')
+                        brand_pic_name = origin_image[pos+1:]
+                        sub_dir = str(brand['category']) +'/'
+                        self.file_tool.saveImg(self.imgSaveRoot,'brand/'+ sub_dir,brand_pic_name,brand_image)
+                        brand['pic_url']='/brand/'+ sub_dir + brand_pic_name
 
                 # 进入详情页处理
                 detail_req = urllib2.Request(brand_detail_url, headers = _headers)
