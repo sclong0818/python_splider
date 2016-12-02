@@ -82,7 +82,7 @@ class Smzdm_Spider:
         # self.get_categoris(headers)
 
         # 处理商城
-        # self.get_malls(headers)
+        self.get_malls(headers)
 
         self.close_db()
         print u'爬虫服务运行.....'
@@ -101,7 +101,11 @@ class Smzdm_Spider:
         malls = []
         recommend_char='★'
         mall_categories = soup.find_all('div',class_="category")
+        #i = 0
         for category in mall_categories:
+            # i += 1
+            # if i>1:
+            #     break
             dom_cate_name = category.find('div',class_='sc-title')
             cate_name = self.myTool.Replace_Char(dom_cate_name.get_text().replace("\n","").encode(self.encoding))
             #print cate_name
@@ -130,24 +134,12 @@ class Smzdm_Spider:
                 except Exception as RESTex:
                     print("Exception occurred making REST call: " + RESTex.__str__())
                     continue
-                soup_detail = BeautifulSoup(detail_page,'lxml')
-                dom_detail_info_div = soup_detail.find('div',class_='sjdhInfoBox')
-                if dom_detail_info_div:
-                    # 图片处理
-                    dom_detail_img_a = dom_detail_info_div.select('div[class="sjdhPic"] > a > img')
-                    detail_img_a = dom_detail_img_a[0]
-                    if detail_img_a:
-                        mall_image = detail_img_a['src']
-                    # url
-                    mall_url_a_attr_ = {'rel':'nofollow','class':'blue'}
-                    dom_mall_url_a = dom_detail_info_div.find('a',mall_url_a_attr_)
-                    mall['url'] = dom_mall_url_a.get_text() if dom_mall_url_a else ''
-                    dom_mall_country_span = dom_detail_info_div.select('div[class="mallAddress"] > span')
-                    if dom_mall_country_span[0]:
-                        mall['country'] = dom_mall_country_span[0].get_text()
-                    dom_mall_excerpt_p = dom_detail_info_div.find('p',class_='p_excerpt')
-                    if dom_mall_excerpt_p:
-                        mall['excerpt'] = self.myTool.Replace_Char(dom_mall_excerpt_p.get_text().replace("\n","").encode(self.encoding))
+                detail = self.get_mall_details(detail_page)
+                if detail:
+                    mall['url'] = detail['url']
+                    mall['country'] = detail['country']
+                    mall['excerpt'] = detail['excerpt']
+                    mall_image = detail['mall_image']
 
                 # save image to local
                 origin_image = mall_image.replace('_g320.jpg','')
@@ -165,6 +157,28 @@ class Smzdm_Spider:
         #print json.dumps(malls,ensure_ascii=False)
         self.save_malls(malls)
         print u'商城爬虫已经结束，咔嚓咔嚓......'
+
+    def get_mall_details(self,detail_page):
+        detail = {}
+        soup_detail = BeautifulSoup(detail_page,'lxml')
+        dom_detail_info_div = soup_detail.find('div',class_='sjdhInfoBox')
+        if dom_detail_info_div:
+            # 图片处理
+            dom_detail_img_a = dom_detail_info_div.select('div[class="sjdhPic"] > a > img')
+            detail_img_a = dom_detail_img_a[0]
+            if detail_img_a:
+                detail['mall_image'] = detail_img_a['src']
+            # url
+            mall_url_a_attr_ = {'rel':'nofollow','class':'blue'}
+            dom_mall_url_a = dom_detail_info_div.find('a',mall_url_a_attr_)
+            detail['url'] = dom_mall_url_a.get_text() if dom_mall_url_a else ''
+            dom_mall_country_span = dom_detail_info_div.select('div[class="mallAddress"] > span')
+            if dom_mall_country_span[0]:
+                detail['country'] = dom_mall_country_span[0].get_text()
+            dom_mall_excerpt_p = dom_detail_info_div.find('p',class_='p_excerpt')
+            if dom_mall_excerpt_p:
+                detail['excerpt'] = self.myTool.Replace_Char(dom_mall_excerpt_p.get_text().replace("\n","").encode(self.encoding))
+        return detail
 
     def save_malls(self,malls):
         sqlvalues = []
