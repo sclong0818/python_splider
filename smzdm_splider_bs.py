@@ -49,7 +49,8 @@ class Smzdm_Spider:
         self.hide_malls = ['ebay','dell','microsoftstore','newegg','amazon_jp','xiji','sfht','mi'
             ,'amazon_de','joesnewbalanceoutlet','sierratradingpost','amazon_fr','kaola','myhabit','nikestore_cn'
             ,'ehaier','midea','jd_hk','royyoungchemist_cn','amcal_cn','bubugao','supuy'
-            ,'muyingzhijia','daling','sasa']
+            ,'muyingzhijia','daling','sasa','amazon_es','6pm','finishline','wiggle','jimmyjazz']
+        self.dict_country = {'美国':227,'日本':109,'英国':226,'德国':82,'澳大利亚':13,'西班牙':198,'香港':97,'德国':82,'法国':74}
         self.imgSaveRoot = 'E:\\wiki_img'
         self.datas = []
         self.myTool = HTML_Tool()
@@ -87,12 +88,60 @@ class Smzdm_Spider:
         # self.get_malls(headers)
 
         # 处理隐藏 mall
+        self.get_malls_hide(headers)
 
         self.close_db()
-        print u'爬虫服务运行.....'
-
+        print u'爬虫服务运行结束.....'
 
     # ------------------------- mall 处理
+    def get_malls_hide(self,_headers):
+        print u'已经启动隐藏商城爬虫，咔嚓咔嚓'
+        #send HTTP/1.0 request , adding this , fix the problem
+        httplib.HTTPConnection._http_vsn = 10
+        httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
+        malls = []
+        category = '综合商城'
+        for uri in self.hide_malls:
+            url = 'http://www.smzdm.com/mall/'+uri
+            detail_req = urllib2.Request(url, headers = _headers)
+            detail_page = ''
+            mall={}
+            mall['uri'] = uri
+            try:
+                detail_page = urllib2.urlopen(detail_req).read().decode(self.encoding)
+            except httplib.IncompleteRead, e:
+                detail_page = e.partial
+            except Exception as RESTex:
+                print("Exception occurred making REST call: " + RESTex.__str__())
+                continue
+            detail = self.get_mall_details(detail_page)
+            if detail:
+                mall['name'] = detail['name']
+                mall['url'] = detail['url']
+                mall['country'] = detail['country']
+                mall['excerpt'] = detail['excerpt']
+                mall_image = detail['mall_image']
+                mall['category'] = category
+                mall['recommend'] = 5
+                mall['summary'] = ''
+                # save image to local
+                if detail['mall_image']:
+                    origin_image = detail['mall_image'].replace('_g320.jpg','')
+                    pos = origin_image.rfind('/')
+                    mall_pic_name = origin_image[pos+1:]
+                    self.saveImg('mall',mall_pic_name,detail['mall_image'])
+                    mall['pic_url']='/mall/'+ mall_pic_name
+
+                malls.append(mall)
+
+        #after | back to http 1.1
+        httplib.HTTPConnection._http_vsn = 11
+        httplib.HTTPConnection._http_vsn_str = 'HTTP/1.1'
+        # 去重 & category 处理
+        # print json.dumps(malls,ensure_ascii=False)
+        self.save_malls(malls)
+        print u'隐藏商城爬虫已经结束，咔嚓咔嚓......'
+
     def get_malls(self,_headers):
         print u'已经启动商城爬虫，咔嚓咔嚓'
         #send HTTP/1.0 request , adding this , fix the problem
@@ -169,6 +218,10 @@ class Smzdm_Spider:
         soup_detail = BeautifulSoup(detail_page,'lxml')
         dom_detail_info_div = soup_detail.find('div',class_='sjdhInfoBox')
         if dom_detail_info_div:
+            #name
+            dom_mall_name_h1 = dom_detail_info_div.find('h1',class_='fontTitle')
+            if dom_mall_name_h1:
+                detail['name'] = dom_mall_name_h1.get_text()
             # 图片处理
             dom_detail_img_a = dom_detail_info_div.select('div[class="sjdhPic"] > a > img')
             detail_img_a = dom_detail_img_a[0]
@@ -204,20 +257,9 @@ class Smzdm_Spider:
                 mall_name_set.add(key)
                 #地域处理
                 country_id = 44
-                if mall['country'] == '美国':
-                    country_id = 227
-                if mall['country'] == '日本':
-                    country_id = 109
-                if mall['country'] == '英国':
-                    country_id = 226
-                if mall['country'] == '德国':
-                    country_id = 82
-                if mall['country'] == '澳大利亚':
-                    country_id = 13
-                if mall['country'] == '西班牙':
-                    country_id = 198
-                if mall['country'] == '香港':
-                    country_id = 97
+                ctry = str(mall['country'])
+                if ctry in self.dict_country:
+                    country_id = self.dict_country[ctry]
 
                 mall_name_cate_map[key] = '综合电商'
                 if mall['category']:
@@ -225,7 +267,7 @@ class Smzdm_Spider:
                 sqlvalues.append((mall['name'],mall_name_cate_map[key],mall['uri'],mall['excerpt'],mall['summary'],mall['recommend'],mall['pic_url'],mall['url'],country_id))
 
         # 批量插入 商城
-        # print sqlvalues
+        #print sqlvalues
         self.insert_malls(sqlvalues)
 
         # 更新商城的category
@@ -247,11 +289,16 @@ class Smzdm_Spider:
         if not os.path.exists(file_path):
             file = open(file_path,'a+')
             file.close()
-        return file_path
+            return file_path
+        else:
+            # 已存在同名文件
+            return ''
 
     def saveImg(self,subpath,filename,imgurl):
         save_path = os.path.join(self.imgSaveRoot,subpath)
-        urllib.urlretrieve(imgurl,self.createFile(save_path,filename),None)
+        file_path = self.createFile(save_path,filename)
+        if file_path:
+            urllib.urlretrieve(imgurl,file_path,None)
 
     # ------------------------- category 处理
     def get_categoris(self,_headers):
