@@ -40,3 +40,14 @@ class SMZDM_Mysql:
 
     def insert_category(self,category):
         self.cur.execute('insert into category(name,parent_id,level,uri) values(%s,%s,%s,%s)',[category['name'],category['parent_id'],category['level'],category['uri']])
+
+    def get_big_categories(self):
+        self.cur.execute('select id,name,uri from category where level=0 and is_show=1')
+        return self.cur.fetchall()
+
+    def get_country(self):
+        self.cur.execute('select id,name,zh_name,code,code2 as zipcode from country where is_show=1')
+        return self.cur.fetchall()
+
+    def insert_brands(self,sqlvalues):
+        self.cur.executemany('insert into brand(name,description,pic_url,country_id,category_id,hot_tag) values(%s,%s,%s,%s,%s,%s)',sqlvalues)

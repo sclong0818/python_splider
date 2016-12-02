@@ -10,3 +10,7 @@ c_spider.test_print()
 
 m_spider = Mall_Spider()
 m_spider.test_print()
+
+a = ['a','b']
+b = ['c','d']
+print a + b

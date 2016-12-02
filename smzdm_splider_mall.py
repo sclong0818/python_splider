@@ -141,8 +141,8 @@ class Mall_Spider:
                     detail_page = urllib2.urlopen(detail_req).read().decode(self.encoding)
                 except httplib.IncompleteRead, e:
                     detail_page = e.partial
-                except Exception as RESTex:
-                    print("Exception occurred making REST call: " + RESTex.__str__())
+                except Exception as ex:
+                    print("Exception occurred get mall detail page call: " + ex.__str__())
                     continue
                 detail = self.get_mall_details(detail_page)
                 if detail:

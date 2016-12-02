@@ -31,7 +31,7 @@ cur.executemany('insert into test values(%s,%s)',values)
 cur.execute('update test set info="i am alex" where id=3')
 
 # 查询所有
-count = cur.execute("select * from test")
+count = cur.execute("select id,info from test")
 
 alldata = cur.fetchall()
 
