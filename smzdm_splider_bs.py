@@ -46,6 +46,10 @@ class Smzdm_Spider:
         self.categoryUrl = 'http://wiki.smzdm.com/youxuan'
         self.brandUrl = 'http://pinpai.smzdm.com'
         self.mallUrl = 'http://www.smzdm.com/mall'
+        self.hide_malls = ['ebay','dell','microsoftstore','newegg','amazon_jp','xiji','sfht','mi'
+            ,'amazon_de','joesnewbalanceoutlet','sierratradingpost','amazon_fr','kaola','myhabit','nikestore_cn'
+            ,'ehaier','midea','jd_hk','royyoungchemist_cn','amcal_cn','bubugao','supuy'
+            ,'muyingzhijia','daling','sasa']
         self.imgSaveRoot = 'E:\\wiki_img'
         self.datas = []
         self.myTool = HTML_Tool()
@@ -72,8 +76,6 @@ class Smzdm_Spider:
         self.conn.close()
         print u'关闭数据库连接.....'
 
-
-
     def spider_start(self):
         #读取页面的原始信息并将其从gbk转码
         user_agent = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
@@ -82,7 +84,9 @@ class Smzdm_Spider:
         # self.get_categoris(headers)
 
         # 处理商城
-        self.get_malls(headers)
+        # self.get_malls(headers)
+
+        # 处理隐藏 mall
 
         self.close_db()
         print u'爬虫服务运行.....'
@@ -125,6 +129,8 @@ class Smzdm_Spider:
                 mall_image = mall_li.find('img')["src"]
                 # 跳转到商城详情
                 detail_url = mall_li.find('a',class_='sc-detail')['href']
+                pos_ = detail_url[0:len(detail_url)-1].rfind('/')
+                mall['uri'] = detail_url[:pos_]
                 detail_req = urllib2.Request(detail_url, headers = _headers)
                 detail_page = ''
                 try:
@@ -216,7 +222,7 @@ class Smzdm_Spider:
                 mall_name_cate_map[key] = '综合电商'
                 if mall['category']:
                     mall_name_cate_map[key] = mall['category']
-                sqlvalues.append((mall['name'],mall_name_cate_map[key],mall['excerpt'],mall['summary'],mall['recommend'],mall['pic_url'],mall['url'],country_id))
+                sqlvalues.append((mall['name'],mall_name_cate_map[key],mall['uri'],mall['excerpt'],mall['summary'],mall['recommend'],mall['pic_url'],mall['url'],country_id))
 
         # 批量插入 商城
         # print sqlvalues
@@ -232,7 +238,7 @@ class Smzdm_Spider:
         self.cur.execute('update mall set categories=%s where name=%s',sqlvalues)
 
     def insert_malls(self,sqlvalues):
-        self.cur.executemany('insert into mall(name,categories,excerpt,summary,recommend,pic_url,url,country_id) values(%s,%s,%s,%s,%s,%s,%s,%s)',sqlvalues)
+        self.cur.executemany('insert into mall(name,categories,uri,excerpt,summary,recommend,pic_url,url,country_id) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)',sqlvalues)
 
     def createFile(self,save_path,filename):
         if not os.path.exists(save_path):
