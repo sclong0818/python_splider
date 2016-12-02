@@ -55,7 +55,12 @@ class Smzdm_Spider:
         self.datas = []
         self.myTool = HTML_Tool()
         self.encoding = "utf-8"
+        print u'已经启动smzdm商品百科爬虫，咔嚓咔嚓'
 
+    def test_print(self):
+        print 'hello world'
+
+    def init_db(self):
         print u'数据库连接初始化.....'
         self.conn= MySQLdb.connect(
                 host='192.168.0.118',
@@ -69,8 +74,7 @@ class Smzdm_Spider:
         self.cur.execute("SET NAMES utf8;")
         self.cur.execute("SET CHARACTER SET utf8;")
         self.cur.execute("SET character_set_connection=utf8;")
-        print u'数据库连接正常.....'
-        print u'已经启动smzdm商品百科爬虫，咔嚓咔嚓'
+        print u'数据库连接初始化正常.....'
 
     def close_db(self):
         self.cur.close()
@@ -78,6 +82,7 @@ class Smzdm_Spider:
         print u'关闭数据库连接.....'
 
     def spider_start(self):
+        self.init_db()
         #读取页面的原始信息并将其从gbk转码
         user_agent = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
         headers = { 'User-Agent' : user_agent }
@@ -88,7 +93,7 @@ class Smzdm_Spider:
         # self.get_malls(headers)
 
         # 处理隐藏 mall
-        self.get_malls_hide(headers)
+        # self.get_malls_hide(headers)
 
         self.close_db()
         print u'爬虫服务运行结束.....'
@@ -365,4 +370,4 @@ print """#----------------------------
 """
 
 mySpider = Smzdm_Spider()
-mySpider.spider_start()
+#mySpider.spider_start()
