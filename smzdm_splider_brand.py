@@ -135,8 +135,9 @@ class Brand_Spider:
                     origin_image = brand_image.replace('_d200.jpg','')
                     pos = origin_image.rfind('/')
                     brand_pic_name = origin_image[pos+1:]
-                    self.file_tool.saveImg(self.imgSaveRoot,'brand',brand_pic_name,brand_image)
-                    brand['pic_url']='/brand/'+ brand_pic_name
+                    sub_dir = str(brand['category']) +'/'
+                    self.file_tool.saveImg(self.imgSaveRoot,'brand/'+ sub_dir,brand_pic_name,brand_image)
+                    brand['pic_url']='/brand/'+ sub_dir + brand_pic_name
 
                 # 进入详情页处理
                 detail_req = urllib2.Request(brand_detail_url, headers = _headers)
