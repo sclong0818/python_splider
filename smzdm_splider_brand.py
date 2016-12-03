@@ -55,8 +55,15 @@ class Brand_Spider:
         user_agent = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
         headers = { 'User-Agent' : user_agent }
         try:
+            #send HTTP/1.0 request , adding this , fix the problem
+            httplib.HTTPConnection._http_vsn = 10
+            httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
             # 处理商城
             self.get_brands(headers)
+
+            #after | back to http 1.1
+            httplib.HTTPConnection._http_vsn = 11
+            httplib.HTTPConnection._http_vsn_str = 'HTTP/1.1'
         except Exception as ex:
             self.db.close_db()
             print("Exception occurred get_brand call: " + ex.__str__())
@@ -73,9 +80,6 @@ class Brand_Spider:
             # if i>2:
             #     break
             brand_cate_url = self.homeUrl + cate_uri
-            #send HTTP/1.0 request , adding this , fix the problem
-            httplib.HTTPConnection._http_vsn = 10
-            httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
 
             req = urllib2.Request(brand_cate_url, headers = _headers)
             myPage = urllib2.urlopen(req).read().decode(self.encoding)
