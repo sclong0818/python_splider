@@ -40,7 +40,7 @@ class Mall_Spider:
         headers = { 'User-Agent' : user_agent }
         try:
             # 处理商城
-            # self.get_malls(headers)
+            self.get_malls(headers)
 
             # 处理隐藏 mall
             self.get_malls_hide(headers)

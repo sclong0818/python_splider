@@ -44,8 +44,7 @@ class Brand_Spider:
         self.db.init_db()
         # 准备工作
         self.prepare_countries()
-        # self.prepare_categories()
-        self.categories = {'tushuyinxiang':577}
+        self.prepare_categories()
 
         # 处理逻辑
         # 1. 按照 category 的uri 请求网页，解析品牌个数 & 品牌第一页
@@ -208,6 +207,3 @@ class Brand_Spider:
         self.db.insert_brands(sqlvalues)
 
         self.db.commit()
-
-b_splider = Brand_Spider()
-b_splider.spider_start()

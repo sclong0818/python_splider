@@ -2,6 +2,7 @@
 
 from smzdm_splider_category import Categories_Spider
 from smzdm_splider_mall import Mall_Spider
+from smzdm_splider_brand import Brand_Spider
 
 
 class Smzdm_Spider:
@@ -12,9 +13,14 @@ class Smzdm_Spider:
         #c_spider.spider_start()
 
         # 启动 mall 爬虫
-        # m_spider = Mall_Spider()
-        # m_spider.test_print()
-        # m_spider.spider_start()
+        #m_spider = Mall_Spider()
+        #m_spider.test_print()
+        #m_spider.spider_start()
+
+        # 启动 mall 爬虫
+        b_spider = Brand_Spider()
+        b_spider.test_print()
+        # b_spider.spider_start()
 
 # ---------- 程序入口 --------------
 print """#----------------------------
