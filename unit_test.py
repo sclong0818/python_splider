@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+import string
+import urllib2
+import json
+from bs4 import BeautifulSoup
+import httplib
+
 from sys import path
 path.append(r'H:\code\python')
 

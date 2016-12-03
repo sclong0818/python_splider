@@ -44,7 +44,8 @@ class Brand_Spider:
         self.db.init_db()
         # 准备工作
         self.prepare_countries()
-        self.prepare_categories()
+        # self.prepare_categories()
+        self.categories = {'tushuyinxiang':577}
 
         # 处理逻辑
         # 1. 按照 category 的uri 请求网页，解析品牌个数 & 品牌第一页
@@ -169,9 +170,8 @@ class Brand_Spider:
         detail = {}
         soup_detail = BeautifulSoup(detail_page,'lxml')
         # hot_tag 处理
-        # 注意： 该dom标签无法明示，后面可以改为 兄弟dom搜索模式
-        dom_hot_tag_div = soup_detail.select('ul[class*="brand-tab"] > a > li > div[class*="brand-tab-title"]')
-        if dom_hot_tag_div[0]:
+        dom_hot_tag_div = soup_detail.select('ul[class="brand-tab"]  li:nth-of-type(1) div:nth-of-type(2)')
+        if dom_hot_tag_div:
             numbs_str = dom_hot_tag_div[0].get_text()
             if numbs_str:
                 numbs = numbs_str.replace('优惠（','').replace('）','')
@@ -179,13 +179,13 @@ class Brand_Spider:
 
         # 地域处理
         dom_brand_country_a = soup_detail.select('div[class*="brand-detail"] > div[class*="brand-country"] > a')
-        if dom_brand_country_a[0]:
+        if dom_brand_country_a:
             country_str = dom_brand_country_a[0].get_text()
             detail['country'] = self.get_country_id(country_str)
 
         # desc 处理
         dom_brand_desc_div = soup_detail.select('div[class*="brand-info-detail"] > div[class*="pop-content"]')
-        if dom_brand_desc_div[0]:
+        if dom_brand_desc_div:
             desc_str = dom_brand_desc_div[0].get_text()
             detail['desc'] = self.myTool.Replace_Char(desc_str.replace("\n","").encode(self.encoding))
         return detail
