@@ -51,3 +51,10 @@ class SMZDM_Mysql:
 
     def insert_brands(self,sqlvalues):
         self.cur.executemany('insert into brand(name,description,pic_url,country_id,category_id,hot_tag) values(%s,%s,%s,%s,%s,%s)',sqlvalues)
+
+    def get_tags(self):
+        self.cur.execute('select id,name,hot_tag from tag')
+        return self.cur.fetchall()
+
+    def insert_tags(self,sqlvalues):
+        self.cur.executemany('insert into tag(name,hot_tag,hot) values(%s,%s,%s)',sqlvalues)
